@@ -1,0 +1,26 @@
+<div class="container separate appear" id="reception">
+	<div class="right-align" style="height: 100px">
+		<img src="assets/imagenes/umedical-logo.png" class="img-fluid" alt="Responsive image" style="height: 100%">
+	</div>
+
+	<hr>
+
+	<div class="row no-gutters">
+		<div class="col">
+			<li class="list-group-item list-group-item-action" (click)="selectOption(1)" [ngClass]="{'bg-info text-white': optionSelected == 1}">Citas Médicas</li>
+		</div>
+		<div class="col">
+			<li class="list-group-item list-group-item-action" (click)="selectOption(2)" [ngClass]="{'bg-info text-white': optionSelected == 2}">Pacientes</li>
+		</div>
+		<div class="col">
+			<li class="list-group-item list-group-item-action" (click)="selectOption(3)" [ngClass]="{'bg-info text-white': optionSelected == 3}">Contratos</li>
+		</div>
+	</div>
+
+	<div class="box border border-info separate appear" style="margin-bottom: 30px" [ngSwitch]="optionSelected">
+		<div id="content-reception-1" class="appear" *ngSwitchCase="1">1</div>
+		<div id="content-reception-2" class="appear" *ngSwitchCase="2"><app-patient></app-patient></div>
+		<div id="content-reception-3" class="appear" *ngSwitchCase="3">3</div>
+	</div>
+
+</div>

@@ -1,0 +1,15 @@
+<div class="jmodal">
+	<div class="jmodal-dialog jmodal-in border border-info"  id="jmodal"> 
+		<div class="jmodal-header">
+			<h5>{{ data.title }}</h5>
+		</div>
+		<div class="jmodal-body">{{ data.content }}</div>
+		<div class="jmodal-footer">
+			<div class="row">
+				<div class="col" *ngFor="let option of data.options; index as i">
+					<button type="button" class="btn btn-block" [ngClass]="{'btn-outline-info': option.info, 'btn-outline-secondary': !option.info}" (click)="chosenOption(i)">{{ option.text }}</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
