@@ -16,7 +16,6 @@ export class LoginComponent implements OnInit{
   }
 
   logIn(){
-    console.log('Login in');
     this.animation.addOutput('login').addEventListener('animationend', () => this.router.navigate(['/recepcion']));
   }
 

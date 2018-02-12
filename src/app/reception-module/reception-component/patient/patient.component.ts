@@ -1,42 +1,53 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
 
 import { PatientService } from '../../services/patient.service';
 import { Animation } from '../../../classes/animation';
 import { ModalData } from '../../../interfaces/modal-data';
 import { Town } from '../../../classes/entities/town';
+import { GeneralValidator } from '../../../validators/general.validator';
+
+import { SelectComponent } from '../../../components/controls/select/select.component';
+import { InputNumbersComponent } from '../../../components/controls/input-numbers/input-numbers.component';
+import { FormService } from '../../../services/form.service';
 
 @Component({
   selector: 'app-patient',
   templateUrl: './patient.component.html',
   styleUrls: ['./patient.component.css'],
-  providers: []
+  providers: [ FormService ]
 })
-export class PatientComponent implements OnInit {
+export class PatientComponent implements OnInit, AfterViewInit {
+
+  @ViewChild('documentForm_documentType') private documentForm_documentType: SelectComponent;
+  @ViewChild('documentForm_documentNumber') private documentForm_documentNumber: InputNumbersComponent;
 
 	private documentForm: FormGroup;
 	private patientForm: FormGroup;
 
 	private shownGroup: boolean[];
-	private documentFormSubmit: boolean;
 	private search: boolean;
 	private new: boolean;
 	private residenceTowns: Town[];
   private birthTowns: Town[];
+  private tooltips: boolean[];
+  private documentFormSubmitted: boolean;
+  private patientFormSubmitted: boolean;
 
 	private modalPatientSearch: ModalData;
 	private modalPatientNew: ModalData;
 	private modalCancel: ModalData;
 	private modalSave: ModalData;
 
-  constructor(private animation: Animation, private patientService: PatientService){
+  constructor(private animation: Animation, private patientService: PatientService, private generalValidator: GeneralValidator, private documentFormService: FormService){
     this.shownGroup = [true, true, true];
-    this.documentFormSubmit = false;
     this.search = false;
     this.new = false;
+    this.documentFormSubmitted = false;
+    this.patientFormSubmitted = false;
     this.documentForm = new FormGroup({
-    	documentType: new FormControl('0'),
-    	documentNumber: new FormControl()
+      documentType: new FormControl('0', this.generalValidator.noSelectedOption),
+      documentNumber: new FormControl('', [Validators.required, Validators.minLength(3)])
     });
     this.patientForm = new FormGroup({
       personalData: new FormGroup({
@@ -63,10 +74,53 @@ export class PatientComponent implements OnInit {
         patientType: new FormControl()
       })
     });
+    this.createTooltips();
   }
 
   ngOnInit(){
     this.animation.deleteEntry('content-reception-2');
+  }
+
+  ngAfterViewInit(){
+    this.orderSubscribe(this.documentForm_documentType, this.documentFormService);
+    this.orderSubscribe(this.documentForm_documentNumber, this.documentFormService);
+  }
+
+  orderSubscribe(control: any, service: any){
+    control.formService = service;
+    control.submitSubscribe();
+  }
+
+  createTooltips(){
+    this.tooltips = this.generalValidator.getTooltipsArray([
+      '.documentForm.documentType',
+      '.documentForm.documentNumber',
+      '.patientForm.personalData.documentType',
+      '.patientForm.personalData.documentNumber',
+      '.patientForm.personalData.name1',
+      '.patientForm.personalData.name2',
+      '.patientForm.personalData.lastName1',
+      '.patientForm.personalData.lastName2',
+      '.patientForm.personalData.birthDate',
+      '.patientForm.personalData.gender',
+      '.patientForm.personalData.birthDepartament',
+      '.patientForm.personalData.birthTown',
+      '.patientForm.contactData.residenceDepartament',
+      '.patientForm.contactData.residenceTown',
+      '.patientForm.contactData.phoneNumber',
+      '.patientForm.contactData.address',
+      '.patientForm.contactData.email',
+      '.patientForm.others.zone',
+      '.patientForm.others.patientType'
+    ]);
+  }
+
+  showTooltip(show: boolean, ...route: string[]){
+    let control: string = '';
+    for(let c of route){
+      control += '.'+c;
+    }
+    this.tooltips[control] = show;
   }
 
   updateTowns(departamentId: number, birth: boolean){
@@ -114,7 +168,8 @@ export class PatientComponent implements OnInit {
   }
 
   searchPatientQuestion(){
-    this.documentFormSubmit = true;
+    this.documentFormService.submitted.next(true);
+    this.documentFormSubmitted = true;
     if(this.documentForm.valid){
       if(this.search && !this.patientForm.pristine){
         this.modalPatientSearch = {
@@ -176,6 +231,7 @@ export class PatientComponent implements OnInit {
   }
 
   saveQuestion(){
+    this.patientFormSubmitted = true;
     if(this.patientForm.valid){
       if(!this.patientForm.pristine){
         this.modalSave = {

@@ -95,8 +95,6 @@
 	border-bottom-right-radius: 10px;
 }
 
-
-
 .jtooltip{
 	position: absolute;
 	width: 100%;
@@ -104,6 +102,7 @@
 	height: auto;
 	transform: translateY(-100%);
 	background: white;
+	border: 1px solid #dc3545;
 	border-radius: 10px;
 	padding: 10px 20px 0px 20px;
 	left: 0px;

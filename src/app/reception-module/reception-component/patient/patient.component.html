@@ -1,10 +1,29 @@
 <div class="compress">
-	<form class="form-row" [formGroup]="documentForm" (ngSubmit)="searchPatientQuestion()">
+	<form class="form-row" (ngSubmit)="searchPatientQuestion(select)">
 		<div class="col form-group">
 			<button type="button" class="btn btn-outline-info btn-block" (click)="newPatientQuestion()">Nuevo paciente</button>
 		</div>
-		<div class="col form-group offset-1">
-			<select class="form-control" formControlName="documentType">
+		<div class="col offset-1">
+			<app-select [options]="[
+				{ text: 'Tipo de documento ...', value: '0'},
+				{ text: 'Cédula de Ciudadanía', value: 'CC'},
+				{ text: 'Cédula de Extranjería', value: 'CE'},
+				{ text: 'Pasaporte', value: 'PA'},
+				{ text: 'Registro Civil', value: 'RC'},
+				{ text: 'Tarjeta de Identidad', value: 'TI'},
+				{ text: 'Adulto sin Identificación', value: 'AS'},
+				{ text: 'Menor sin Identificación', value: 'MS'},
+				{ text: 'Número Único de Identificación', value: 'NU'}
+			]" [emit]="false" [error]="'Debe seleccionar un tipo de documento'" [control]="documentForm.get('documentType')" #documentForm_documentType></app-select>
+		</div>
+		<div class="col">
+			<app-input-numbers [error]="'Ingrese un número de mínimo 3 dígitos'" [control]="documentForm.get('documentNumber')" #documentForm_documentNumber></app-input-numbers>
+		</div>
+		<!-- <div class="col form-group offset-1" (mouseover)="showTooltip(true, 'documentForm', 'documentType')" (mouseout)="showTooltip(false, 'documentForm', 'documentType')">
+			<div class="jtooltip" *ngIf="documentFormSubmitted && tooltips['.documentForm.documentType']">
+				<p *ngIf="documentForm.get('documentType').errors?.noSelectedOption">Seleccione un tipo de documento</p>
+			<div class="jarrow"></div></div>
+			<select class="form-control" formControlName="documentType" [ngClass]="{'is-invalid': documentFormSubmitted && documentForm.get('documentType').invalid}">
         <option value="0">Tipo de Documento...</option>
         <option value="CC">Cédula de Ciudadanía</option>
         <option value="CE">Cédula de Extranjería</option>
@@ -15,14 +34,20 @@
         <option value="MS">Menor sin Identificación</option>
         <option value="NU">Número Único de Identificación</option>
       </select>
-		</div>
-		<div class="col form-group">
-			<input type="text" class="form-control" formControlName="documentNumber">
-		</div>
+		</div> -->
+		<!-- <div class="col form-group" (mouseover)="showTooltip(true, 'documentForm', 'documentNumber')" (mouseout)="showTooltip(false, 'documentForm', 'documentNumber')">
+			<div class="jtooltip" *ngIf="documentFormSubmitted && tooltips['.documentForm.documentNumber']">
+				<p *ngIf="documentForm.get('documentNumber').errors?.required">Ingrese un número de documento</p>
+				<p *ngIf="documentForm.get('documentNumber').errors?.minlength">Mínimo 3 números</p>
+			<div class="jarrow"></div></div>
+			<input type="text" class="form-control" [ngClass]="{'is-invalid': documentFormSubmitted && documentForm.get('documentType').invalid}" (keypress)="generalValidator.justNumbers($event)">
+		</div> -->
 		<div class="col form-group">
 			<button type="submit" class="btn btn-outline-info btn-block">Buscar paciente</button>
 		</div>
 	</form>
+
+	<div class="alert alert-info" style="text-align: center;" role="alert" *ngIf="search && !patientService.patient">Paciente no encontrado.</div>
 
 	<div *ngIf="patientService.patient">
 		<form class="separate" [formGroup]="patientForm">

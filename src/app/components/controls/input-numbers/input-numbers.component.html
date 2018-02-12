@@ -1,0 +1,15 @@
+<div class="form-group" (mouseover)="tooltip = true" (mouseout)="tooltip = false">
+	<div class="jtooltip" *ngIf="formSubmitted && tooltip && control.invalid">
+		<p>{{ error }}</p>
+	<div class="jarrow"></div></div>
+	<label *ngIf="label">{{ label }}</label>
+	<input type="text" class="form-control" [ngClass]="{'is-invalid': control.invalid && formSubmitted }" [formControl]="control" [placeholder]="placeholder" (keypress)="generalValidator.justNumbers($event)">
+</div>
+
+<!-- <div class="col form-group" (mouseover)="showTooltip(true, 'documentForm', 'documentNumber')" (mouseout)="showTooltip(false, 'documentForm', 'documentNumber')">
+	<div class="jtooltip" *ngIf="documentFormSubmitted && tooltips['.documentForm.documentNumber']">
+		<p *ngIf="documentForm.get('documentNumber').errors?.required">Ingrese un número de documento</p>
+		<p *ngIf="documentForm.get('documentNumber').errors?.minlength">Mínimo 3 números</p>
+	<div class="jarrow"></div></div>
+	<input type="text" class="form-control" [ngClass]="{'is-invalid': documentFormSubmitted && documentForm.get('documentType').invalid}" (keypress)="generalValidator.justNumbers($event)">
+</div> -->
