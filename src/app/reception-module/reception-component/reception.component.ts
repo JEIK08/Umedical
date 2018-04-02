@@ -13,7 +13,7 @@ export class ReceptionComponent implements OnInit {
 	private optionSelected: number;
 
   constructor(private animation: Animation) {
-  	this.optionSelected = 2;
+  	this.optionSelected = 1;
   }
 
   ngOnInit(){

@@ -1,0 +1,7 @@
+<div class="form-group" (mouseover)="tooltip = true" (mouseout)="tooltip = false">
+	<div class="jtooltip" *ngIf="formSubmitted && tooltip && control.invalid">
+		<p>{{ error }}</p>
+	<div class="jarrow"></div></div>
+	<label *ngIf="label">{{ label }}</label>
+	<input type="text" class="form-control" [ngClass]="{'is-invalid': control.invalid && formSubmitted }" [formControl]="control" [placeholder]="placeholder" (keypress)="generalValidator.justNumbers($event)">
+</div>

@@ -1,4 +1,5 @@
 export interface PatientForm {
+	
 	personalData: {
 		documentType: string,
 		documentNumber: string,

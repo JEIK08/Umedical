@@ -10,10 +10,10 @@ import { Control } from '../control.component';
 })
 export class SelectComponent extends Control{
 
-  @Input('options') options: OptionSelect[];
-  @Input('emit') emit: boolean;
+  @Input('options') private options: OptionSelect[];
+  @Input('emitOnChange') private emitOnChange: boolean;
 
-	@Output('optionSelected') optionSelected: EventEmitter<OptionSelect>
+	@Output('optionSelected') private optionSelected: EventEmitter<OptionSelect>
 
   constructor() {
     super();
@@ -21,7 +21,7 @@ export class SelectComponent extends Control{
   }
 
   selectOption(option: any){
-    if(this.emit) this.optionSelected.emit(option);
+    if(this.emitOnChange) this.optionSelected.emit(option);
   }
 
 }

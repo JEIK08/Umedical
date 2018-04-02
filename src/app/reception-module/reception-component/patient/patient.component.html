@@ -1,194 +1,349 @@
-<div class="compress">
-	<form class="form-row" (ngSubmit)="searchPatientQuestion(select)">
-		<div class="col form-group">
-			<button type="button" class="btn btn-outline-info btn-block" (click)="newPatientQuestion()">Nuevo paciente</button>
+<form class="form-row" (ngSubmit)="searchPatientQuestion()">
+	<div class="col form-group">
+		<button type="button" class="btn btn-outline-info btn-block" (click)="newPatientQuestion()">Nuevo paciente</button>
+	</div>
+	<div class="col offset-1">
+		<app-select
+		[error]="'Debe seleccionar un tipo de documento'"
+		[control]="documentForm.get('documentType')"
+		[submit]="documentSubmit"
+		[options]="[
+			{ text: 'Tipo de documento...', value: '0' },
+			{ text: 'Cédula de Ciudadanía', value: 'CC' },
+			{ text: 'Cédula de Extranjería', value: 'CE' },
+			{ text: 'Pasaporte', value: 'PA' },
+			{ text: 'Registro Civil', value: 'RC' },
+			{ text: 'Tarjeta de Identidad', value: 'TI' },
+			{ text: 'Adulto sin Identificación', value: 'AS' },
+			{ text: 'Menor sin Identificación', value: 'MS' },
+			{ text: 'Número Único de Identificación', value: 'NU' }
+		]" [emitOnChange]="false"></app-select>
+	</div>
+	<div class="col">
+		<app-number
+		[error]="'Ingrese un número de mínimo 3 dígitos'"
+		[control]="documentForm.get('documentNumber')"
+		[submit]="documentSubmit"></app-number>
+	</div>
+	<div class="col form-group">
+		<button type="submit" class="btn btn-outline-info btn-block">Buscar paciente</button>
+	</div>
+</form>
+
+<div class="alert alert-info" style="text-align: center;" role="alert" *ngIf="search && !patientService.patient">Paciente no encontrado.</div>
+
+<div *ngIf="patientService.patient">
+	<form class="separate">
+		<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[0], 'collapse-title-inactive': !shownGroup[0]}" (click)="shownGroup[0] = !shownGroup[0]">Datos personales</div>			
+		<div class="collapse-content appear" *ngIf="shownGroup[0]">
+			<div class="form-row">
+				<div class="col">
+					<app-select [label]="'Tipo de documento'"
+					[error]="'Debe seleccionar un tipo de documento'"
+					[control]="patientForm.get('personalData.documentType')"
+					[submit]="patientSubmit"
+					[options]="[
+						{ text: 'Tipo de documento...', value: '0' },
+						{ text: 'Cédula de Ciudadanía', value: 'CC' },
+						{ text: 'Cédula de Extranjería', value: 'CE' },
+						{ text: 'Pasaporte', value: 'PA' },
+						{ text: 'Registro Civil', value: 'RC' },
+						{ text: 'Tarjeta de Identidad', value: 'TI' },
+						{ text: 'Adulto sin Identificación', value: 'AS' },
+						{ text: 'Menor sin Identificación', value: 'MS' },
+						{ text: 'Número Único de Identificación', value: 'NU' }
+					]" [emitOnChange]="false"></app-select>
+				</div>
+				<div class="col">
+					<app-number [label]="'Documento de identificación'"
+					[error]="'Ingrese un número de mínimo 3 dígitos'"
+					[control]="patientForm.get('personalData.documentNumber')"
+					[submit]="patientSubmit"></app-number>
+				</div>
+			</div>
+			<div class="form-row ">
+				<div class="col">
+					<app-text [label]="'Primer nombre'"
+					[error]="'Ingrese un nombre'"
+					[control]="patientForm.get('personalData.name1')"
+					[submit]="patientSubmit"></app-text>
+				</div>
+				<div class="col">
+					<app-text [label]="'Segundo nombre'"
+					[error]="''"
+					[control]="patientForm.get('personalData.name2')"
+					[submit]="patientSubmit"></app-text>
+				</div>
+				<div class="col">
+					<app-text [label]="'Primer apellido'"
+					[error]="'Ingrese un apellido'"
+					[control]="patientForm.get('personalData.lastName1')"
+					[submit]="patientSubmit"></app-text>
+				</div>
+				<div class="col">
+					<app-text [label]="'Segundo apellido'"
+					[error]="''"
+					[control]="patientForm.get('personalData.lastName2')"
+					[submit]="patientSubmit"></app-text>
+				</div>
+			</div>
+			<div class="form-row ">
+				<div class="col">
+					<app-date [label]="'Fecha de nacimiento'"
+					[error]="'Seleccione una fecha válida'"
+					[control]="patientForm.get('personalData.birthDate')"
+					[submit]="patientSubmit"></app-date>
+				</div>
+				<div class="col">
+					<app-select [label]="'Sexo'"
+					[error]="'Seleccione una opción'"
+					[control]="patientForm.get('personalData.gender')"
+					[submit]="patientSubmit"
+					[options]="[
+						{ text: 'Seleccione...', value: '0' },
+						{ text: 'Masculino', value: 'M' },
+						{ text: 'Femenino', value: 'F' }
+					]" [emitOnChange]="false"></app-select>
+				</div>
+			</div>
+			<div class="form-row ">
+				<div class="col">
+					<app-select [label]="'Departamento de nacimiento'"
+					[error]="'Seleccione un departamento'"
+					[control]="patientForm.get('personalData.birthDepartament')"
+					[submit]="patientSubmit"
+					[options]="patientService.departaments"
+					[emitOnChange]="true" (optionSelected)="updateTowns($event, true)"></app-select>
+				</div>
+				<div class="col">
+					<app-select [label]="'Municipio de nacimiento'"
+					[error]="'Seleccione un municipio'"
+					[control]="patientForm.get('personalData.birthTown')"
+					[submit]="patientSubmit"
+					[options]="birthTowns"
+					[emitOnChange]="false"></app-select>
+				</div>
+			</div>
 		</div>
-		<div class="col offset-1">
-			<app-select [options]="[
-				{ text: 'Tipo de documento ...', value: '0'},
-				{ text: 'Cédula de Ciudadanía', value: 'CC'},
-				{ text: 'Cédula de Extranjería', value: 'CE'},
-				{ text: 'Pasaporte', value: 'PA'},
-				{ text: 'Registro Civil', value: 'RC'},
-				{ text: 'Tarjeta de Identidad', value: 'TI'},
-				{ text: 'Adulto sin Identificación', value: 'AS'},
-				{ text: 'Menor sin Identificación', value: 'MS'},
-				{ text: 'Número Único de Identificación', value: 'NU'}
-			]" [emit]="false" [error]="'Debe seleccionar un tipo de documento'" [control]="documentForm.get('documentType')" #documentForm_documentType></app-select>
+
+		<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[1], 'collapse-title-inactive': !shownGroup[1]}" (click)="shownGroup[1] = !shownGroup[1]">Datos de contacto</div>
+		<div class="collapse-content appear" *ngIf="shownGroup[1]">
+			<div class="form-row">
+				<div class="col">
+					<app-select [label]="'Departamento de residencia'"
+					[error]="'Seleccione un departamento'"
+					[control]="patientForm.get('contactData.residenceDepartament')"
+					[submit]="patientSubmit"
+					[options]="patientService.departaments"
+					[emitOnChange]="true" (optionSelected)="updateTowns($event, false)"></app-select>
+				</div>
+				<div class="col">
+					<app-select [label]="'Municipio de residencia'"
+					[error]="'Seleccione un municipio'"
+					[control]="patientForm.get('contactData.residenceTown')"
+					[submit]="patientSubmit"
+					[options]="residenceTowns"
+					[emitOnChange]="false"></app-select>
+				</div>
+				<div class="col">
+					<app-number [label]="'Número de teléfono'"
+					[error]="'Ingrese un teléfono de mínimo 3 dígitos'"
+					[control]="patientForm.get('contactData.phoneNumber')"
+					[submit]="patientSubmit"></app-number>
+				</div>
+			</div>
+			<div class="form-row ">
+				<div class="col-8">
+					<app-text [label]="'Dirección de residencia'"
+					[error]="'Ingrese una dirección'"
+					[control]="patientForm.get('contactData.address')"
+					[submit]="patientSubmit"></app-text>
+				</div>
+				<div class="col-4">
+					<app-text [label]="'E-Mail'"
+					[error]="'Ingrese un correo válido'"
+					[control]="patientForm.get('contactData.email')"
+					[submit]="patientSubmit"></app-text>
+				</div>
+			</div>
 		</div>
-		<div class="col">
-			<app-input-numbers [error]="'Ingrese un número de mínimo 3 dígitos'" [control]="documentForm.get('documentNumber')" #documentForm_documentNumber></app-input-numbers>
+
+		<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[2], 'collapse-title-inactive': !shownGroup[2]}" (click)="shownGroup[2] = !shownGroup[2]">Otros</div>
+		<div class="collapse-content appear" *ngIf="shownGroup[2]">
+			<div class="form-row">
+				<div class="col">
+					<app-select [label]="'Zona'"
+					[error]="'Seleccione una opción'"
+					[control]="patientForm.get('others.zone')"
+					[submit]="patientSubmit"
+					[options]="[
+						{ text: 'Seleccione...', value: '0' },
+						{ text: 'Urbana', value: 'U' },
+						{ text: 'Rural', value: 'R' }
+					]" [emitOnChange]="false"></app-select>
+				</div>
+				<div class="col">
+					<app-select [label]="'Régimen'"
+					[error]="'Seleccione una opción'"
+					[control]="patientForm.get('others.patientType')"
+					[submit]="patientSubmit"
+					[options]="[
+						{ text: 'Seleccione...', value: '0' },
+						{ text: 'Contributivo', value: 1 },
+						{ text: 'Subsidiado', value: 2 },
+						{ text: 'Vinculado', value: 3 },
+						{ text: 'Particular', value: 4 },
+						{ text: 'Otro', value: 5 }
+					]" [emitOnChange]="false"></app-select>
+				</div>
+			</div>
 		</div>
-		<!-- <div class="col form-group offset-1" (mouseover)="showTooltip(true, 'documentForm', 'documentType')" (mouseout)="showTooltip(false, 'documentForm', 'documentType')">
-			<div class="jtooltip" *ngIf="documentFormSubmitted && tooltips['.documentForm.documentType']">
-				<p *ngIf="documentForm.get('documentType').errors?.noSelectedOption">Seleccione un tipo de documento</p>
-			<div class="jarrow"></div></div>
-			<select class="form-control" formControlName="documentType" [ngClass]="{'is-invalid': documentFormSubmitted && documentForm.get('documentType').invalid}">
-        <option value="0">Tipo de Documento...</option>
-        <option value="CC">Cédula de Ciudadanía</option>
-        <option value="CE">Cédula de Extranjería</option>
-        <option value="PA">Pasaporte</option>
-        <option value="RC">Registro Civil</option>
-        <option value="TI">Tarjeta de Identidad</option>
-        <option value="AS">Adulto sin Identificación</option>
-        <option value="MS">Menor sin Identificación</option>
-        <option value="NU">Número Único de Identificación</option>
-      </select>
-		</div> -->
-		<!-- <div class="col form-group" (mouseover)="showTooltip(true, 'documentForm', 'documentNumber')" (mouseout)="showTooltip(false, 'documentForm', 'documentNumber')">
-			<div class="jtooltip" *ngIf="documentFormSubmitted && tooltips['.documentForm.documentNumber']">
-				<p *ngIf="documentForm.get('documentNumber').errors?.required">Ingrese un número de documento</p>
-				<p *ngIf="documentForm.get('documentNumber').errors?.minlength">Mínimo 3 números</p>
-			<div class="jarrow"></div></div>
-			<input type="text" class="form-control" [ngClass]="{'is-invalid': documentFormSubmitted && documentForm.get('documentType').invalid}" (keypress)="generalValidator.justNumbers($event)">
-		</div> -->
-		<div class="col form-group">
-			<button type="submit" class="btn btn-outline-info btn-block">Buscar paciente</button>
+
+		<div class="row separate">
+			<div class="col"><button type="button" class="btn btn-outline-secondary btn-block" (click)="cancelQuestion()">Cancelar</button></div>
+			<div class="col" *ngIf="search"><button type="button" class="btn btn-outline-info btn-block" (click)="disableForm(false)">Editar</button></div>
+			<div class="col"><button type="submit" class="btn btn-outline-info btn-block" (click)="saveQuestion()">Guardar</button></div>
 		</div>
 	</form>
 
-	<div class="alert alert-info" style="text-align: center;" role="alert" *ngIf="search && !patientService.patient">Paciente no encontrado.</div>
-
-	<div *ngIf="patientService.patient">
-		<form class="separate" [formGroup]="patientForm">
-			<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[0], 'collapse-title-inactive': !shownGroup[0]}" (click)="shownGroup[0] = !shownGroup[0]">Datos personales</div>
-			<div class="collapse-content appear" formGroupName="personalData" *ngIf="shownGroup[0]">
-				<div class="form-row">
-					<div class="col">
-						<label>Tipo de documento</label>
-						<select class="form-control" formControlName="documentType">
-							<option value="0">Tipo de Documento...</option>
-							<option value="CC">Cédula de Ciudadanía</option>
-							<option value="CE">Cédula de Extranjería</option>
-							<option value="PA">Pasaporte</option>
-							<option value="RC">Registro Civil</option>
-							<option value="TI">Tarjeta de Identidad</option>
-							<option value="AS">Adulto sin Identificación</option>
-							<option value="MS">Menor sin Identificación</option>
-							<option value="NU">Número Único de Identificación</option>
-						</select>
-					</div>
-					<div class="col">
-						<label>Documento de identificación</label>
-						<input type="text" class="form-control" formControlName="documentNumber">
-					</div>
+	<!-- <form class="separate" [formGroup]="patientForm">
+		<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[0], 'collapse-title-inactive': !shownGroup[0]}" (click)="shownGroup[0] = !shownGroup[0]">Datos personales</div>
+		<div class="collapse-content appear" formGroupName="personalData" *ngIf="shownGroup[0]">
+			<div class="form-row">
+				<div class="col">
+					<label>Tipo de documento</label>
+					<select class="form-control" formControlName="documentType">
+						<option value="0">Tipo de Documento...</option>
+						<option value="CC">Cédula de Ciudadanía</option>
+						<option value="CE">Cédula de Extranjería</option>
+						<option value="PA">Pasaporte</option>
+						<option value="RC">Registro Civil</option>
+						<option value="TI">Tarjeta de Identidad</option>
+						<option value="AS">Adulto sin Identificación</option>
+						<option value="MS">Menor sin Identificación</option>
+						<option value="NU">Número Único de Identificación</option>
+					</select>
 				</div>
-				<div class="form-row separate">
-					<div class="col">
-						<label>Primer nombre</label>
-						<input type="text" class="form-control" formControlName="name1">
-					</div>
-					<div class="col">
-						<label>Segundo nombre</label>
-						<input type="text" class="form-control" formControlName="name2">
-					</div>
-					<div class="col">
-						<label>Primer apellido</label>
-						<input type="text" class="form-control" formControlName="lastName1">
-					</div>
-					<div class="col">
-						<label>Segundo apellido</label>
-						<input type="text" class="form-control" formControlName="lastName2">
-					</div>
-				</div>
-				<div class="form-row separate">
-					<div class="col">
-						<label>Fecha de nacimiento</label>
-						<input type="date" class="form-control" formControlName="birthDate">
-					</div>
-					<div class="col">
-						<label>Sexo</label>
-						<select class="form-control" formControlName="gender">
-							<option value="0">Seleccione...</option>
-							<option value="M">Masculino</option>
-							<option value="F">Femenino</option>
-						</select>
-					</div>
-				</div>
-				<div class="form-row separate">
-					<div class="col">
-						<label>Departamento de nacimiento</label>
-						<select class="form-control" formControlName="birthDepartament" (ngModelChange)="updateTowns($event, true)">
-							<option value=0>Seleccione...</option>
-							<option [value]="departament.id" *ngFor="let departament of patientService.departaments">{{ departament.name }}</option>
-						</select>
-					</div>
-					<div class="col">
-						<label>Municipio de nacimiento</label>
-						<select class="form-control" formControlName="birthTown">
-							<option value=0>Seleccione...</option>
-							<option [value]="town.id" *ngFor="let town of birthTowns">{{ town.name }}</option>
-						</select>
-					</div>
+				<div class="col">
+					<label>Documento de identificación</label>
+					<input type="text" class="form-control" formControlName="documentNumber">
 				</div>
 			</div>
-
-			<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[1], 'collapse-title-inactive': !shownGroup[1]}" (click)="shownGroup[1] = !shownGroup[1]">Datos de contacto</div>
-			<div class="collapse-content appear" formGroupName="contactData" *ngIf="shownGroup[1]">
-				<div class="form-row">
-					<div class="col">
-						<label>Departamento de residencia</label>
-						<select class="form-control" formControlName="residenceDepartament" (ngModelChange)="updateTowns($event, false)">
-							<option value=0>Seleccione...</option>
-							<option [value]="departament.id" *ngFor="let departament of patientService.departaments">{{ departament.name }}</option>
-						</select>
-					</div>
-					<div class="col">
-						<label>Municipio de residencia</label>
-						<select class="form-control" formControlName="residenceTown">
-							<option value=0>Seleccione...</option>
-							<option [value]="town.id" *ngFor="let town of residenceTowns">{{ town.name }}</option>
-						</select>
-					</div>
-					<div class="col">
-						<label>Número de teléfono</label>
-						<input type="text" class="form-control" formControlName="phoneNumber">
-					</div>
+			<div class="form-row separate">
+				<div class="col">
+					<label>Primer nombre</label>
+					<input type="text" class="form-control" formControlName="name1">
 				</div>
-				<div class="form-row separate">
-					<div class="col-md-8">
-						<label>Dirección de residencia</label>
-						<input type="text" class="form-control" formControlName="address">
-					</div>
-					<div class="col-md-4">
-						<label>E-Mail</label>
-						<input type="email" class="form-control" formControlName="email">
-					</div>
+				<div class="col">
+					<label>Segundo nombre</label>
+					<input type="text" class="form-control" formControlName="name2">
+				</div>
+				<div class="col">
+					<label>Primer apellido</label>
+					<input type="text" class="form-control" formControlName="lastName1">
+				</div>
+				<div class="col">
+					<label>Segundo apellido</label>
+					<input type="text" class="form-control" formControlName="lastName2">
 				</div>
 			</div>
-
-			<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[2], 'collapse-title-inactive': !shownGroup[2]}" (click)="shownGroup[2] = !shownGroup[2]">Otros</div>
-			<div class="collapse-content appear" formGroupName="others" *ngIf="shownGroup[2]">
-				<div class="form-row">
-					<div class="col">
-						<label>Zona</label>
-						<select class="form-control" formControlName="zone">
-							<option value="0">Seleccione...</option>
-							<option value="U">Urbana</option>
-							<option value="R">Rural</option>
-						</select>
-					</div>
-					<div class="col">
-						<label>Régimen</label>
-						<select class="form-control" formControlName="patientType">
-							<option value="0">Seleccione...</option>
-							<option value="1">Contributivo</option>
-							<option value="2">Subsidiado</option>
-							<option value="3">Vinculado</option>
-							<option value="4">Particular</option>
-							<option value="5">Otro</option>
-						</select>
-					</div>
+			<div class="form-row separate">
+				<div class="col">
+					<label>Fecha de nacimiento</label>
+					<input type="date" class="form-control" formControlName="birthDate">
+				</div>
+				<div class="col">
+					<label>Sexo</label>
+					<select class="form-control" formControlName="gender">
+						<option value="0">Seleccione...</option>
+						<option value="M">Masculino</option>
+						<option value="F">Femenino</option>
+					</select>
 				</div>
 			</div>
-
-			<div class="row separate">
-				<div class="col"><button type="button" class="btn btn-outline-secondary btn-block" (click)="cancelQuestion()">Cancelar</button></div>
-				<div class="col" *ngIf="search"><button type="button" class="btn btn-outline-info btn-block" (click)="disableForm(false)">Editar</button></div>
-				<div class="col"><button type="submit" class="btn btn-outline-info btn-block" (click)="saveQuestion()">Guardar</button></div>
+			<div class="form-row separate">
+				<div class="col">
+					<label>Departamento de nacimiento</label>
+					<select class="form-control" formControlName="birthDepartament" (ngModelChange)="updateTowns($event, true)">
+						<option value=0>Seleccione...</option>
+						<option [value]="departament.id" *ngFor="let departament of patientService.departaments">{{ departament.name }}</option>
+					</select>
+				</div>
+				<div class="col">
+					<label>Municipio de nacimiento</label>
+					<select class="form-control" formControlName="birthTown">
+						<option value=0>Seleccione...</option>
+						<option [value]="town.id" *ngFor="let town of birthTowns">{{ town.name }}</option>
+					</select>
+				</div>
 			</div>
-		</form>
-	</div>
+		</div>
+
+		<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[1], 'collapse-title-inactive': !shownGroup[1]}" (click)="shownGroup[1] = !shownGroup[1]">Datos de contacto</div>
+		<div class="collapse-content appear" formGroupName="contactData" *ngIf="shownGroup[1]">
+			<div class="form-row">
+				<div class="col">
+					<label>Departamento de residencia</label>
+					<select class="form-control" formControlName="residenceDepartament" (ngModelChange)="updateTowns($event, false)">
+						<option value=0>Seleccione...</option>
+						<option [value]="departament.id" *ngFor="let departament of patientService.departaments">{{ departament.name }}</option>
+					</select>
+				</div>
+				<div class="col">
+					<label>Municipio de residencia</label>
+					<select class="form-control" formControlName="residenceTown">
+						<option value=0>Seleccione...</option>
+						<option [value]="town.id" *ngFor="let town of residenceTowns">{{ town.name }}</option>
+					</select>
+				</div>
+				<div class="col">
+					<label>Número de teléfono</label>
+					<input type="text" class="form-control" formControlName="phoneNumber">
+				</div>
+			</div>
+			<div class="form-row separate">
+				<div class="col-md-8">
+					<label>Dirección de residencia</label>
+					<input type="text" class="form-control" formControlName="address">
+				</div>
+				<div class="col-md-4">
+					<label>E-Mail</label>
+					<input type="email" class="form-control" formControlName="email">
+				</div>
+			</div>
+		</div>
+
+		<div class="collapse-title" [ngClass]="{'collapse-title-active': shownGroup[2], 'collapse-title-inactive': !shownGroup[2]}" (click)="shownGroup[2] = !shownGroup[2]">Otros</div>
+		<div class="collapse-content appear" formGroupName="others" *ngIf="shownGroup[2]">
+			<div class="form-row">
+				<div class="col">
+					<label>Zona</label>
+					<select class="form-control" formControlName="zone">
+						<option value="0">Seleccione...</option>
+						<option value="U">Urbana</option>
+						<option value="R">Rural</option>
+					</select>
+				</div>
+				<div class="col">
+					<label>Régimen</label>
+					<select class="form-control" formControlName="patientType">
+						<option value="0">Seleccione...</option>
+						<option value="1">Contributivo</option>
+						<option value="2">Subsidiado</option>
+						<option value="3">Vinculado</option>
+						<option value="4">Particular</option>
+						<option value="5">Otro</option>
+					</select>
+				</div>
+			</div>
+		</div>
+
+		<div class="row separate">
+			<div class="col"><button type="button" class="btn btn-outline-secondary btn-block" (click)="cancelQuestion()">Cancelar</button></div>
+			<div class="col" *ngIf="search"><button type="button" class="btn btn-outline-info btn-block" (click)="disableForm(false)">Editar</button></div>
+			<div class="col"><button type="submit" class="btn btn-outline-info btn-block" (click)="saveQuestion()">Guardar</button></div>
+		</div>
+	</form> -->
 </div>
 
 <div *ngIf="modalPatientSearch"><app-modal [data]="modalPatientSearch" (optionSelected)="searchPatient($event)"></app-modal></div>

@@ -1,5 +1,6 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { Subject } from 'rxjs/Subject';
 
 import { PatientService } from '../../services/patient.service';
 import { Animation } from '../../../classes/animation';
@@ -7,120 +8,71 @@ import { ModalData } from '../../../interfaces/modal-data';
 import { Town } from '../../../classes/entities/town';
 import { GeneralValidator } from '../../../validators/general.validator';
 
-import { SelectComponent } from '../../../components/controls/select/select.component';
-import { InputNumbersComponent } from '../../../components/controls/input-numbers/input-numbers.component';
-import { FormService } from '../../../services/form.service';
-
 @Component({
   selector: 'app-patient',
   templateUrl: './patient.component.html',
-  styleUrls: ['./patient.component.css'],
-  providers: [ FormService ]
+  styleUrls: ['./patient.component.css']
 })
-export class PatientComponent implements OnInit, AfterViewInit {
-
-  @ViewChild('documentForm_documentType') private documentForm_documentType: SelectComponent;
-  @ViewChild('documentForm_documentNumber') private documentForm_documentNumber: InputNumbersComponent;
+export class PatientComponent implements OnInit {
 
 	private documentForm: FormGroup;
 	private patientForm: FormGroup;
+  private documentSubmit: Subject<boolean>;
+  private patientSubmit: Subject<boolean>;
 
 	private shownGroup: boolean[];
 	private search: boolean;
 	private new: boolean;
-	private residenceTowns: Town[];
-  private birthTowns: Town[];
+	private residenceTowns: any[];
+  private birthTowns: any[];
   private tooltips: boolean[];
-  private documentFormSubmitted: boolean;
-  private patientFormSubmitted: boolean;
 
 	private modalPatientSearch: ModalData;
 	private modalPatientNew: ModalData;
 	private modalCancel: ModalData;
 	private modalSave: ModalData;
 
-  constructor(private animation: Animation, private patientService: PatientService, private generalValidator: GeneralValidator, private documentFormService: FormService){
+  constructor(private animation: Animation, private patientService: PatientService, private generalValidator: GeneralValidator){
     this.shownGroup = [true, true, true];
     this.search = false;
     this.new = false;
-    this.documentFormSubmitted = false;
-    this.patientFormSubmitted = false;
+    this.residenceTowns = [{ text: 'Seleccione...', value: '0' }];
+    this.birthTowns = [{ text: 'Seleccione...', value: '0' }];
+    this.documentSubmit = new Subject();
+    this.patientSubmit = new Subject();
     this.documentForm = new FormGroup({
       documentType: new FormControl('0', this.generalValidator.noSelectedOption),
       documentNumber: new FormControl('', [Validators.required, Validators.minLength(3)])
     });
     this.patientForm = new FormGroup({
       personalData: new FormGroup({
-        documentType: new FormControl(),
-        documentNumber: new FormControl(),
-        name1: new FormControl(),
+        documentType: new FormControl('0', this.generalValidator.noSelectedOption),
+        documentNumber: new FormControl('', [Validators.required, Validators.minLength(3)]),
+        name1: new FormControl('', [Validators.required]),
         name2: new FormControl(),
-        lastName1: new FormControl(),
+        lastName1: new FormControl('', [Validators.required]),
         lastName2: new FormControl(),
-        birthDate: new FormControl(),
-        gender: new FormControl(),
-        birthDepartament: new FormControl(),
-        birthTown: new FormControl()
+        birthDate: new FormControl('', [this.generalValidator.noSelectedDate]),
+        gender: new FormControl('0', this.generalValidator.noSelectedOption),
+        birthDepartament: new FormControl('0', this.generalValidator.noSelectedOption),
+        birthTown: new FormControl('0', this.generalValidator.noSelectedOption)
       }),
       contactData: new FormGroup({
-        residenceDepartament: new FormControl(),
-        residenceTown: new FormControl(),
-        phoneNumber: new FormControl(),
-        address: new FormControl(),
-        email: new FormControl()
+        residenceDepartament: new FormControl('0', this.generalValidator.noSelectedOption),
+        residenceTown: new FormControl('0', this.generalValidator.noSelectedOption),
+        phoneNumber: new FormControl('', [Validators.required, Validators.minLength(3)]),
+        address: new FormControl('', [Validators.required]),
+        email: new FormControl('', [Validators.required])
       }),
       others: new FormGroup({
-        zone: new FormControl(),
-        patientType: new FormControl()
+        zone: new FormControl('0', this.generalValidator.noSelectedOption),
+        patientType: new FormControl('0', this.generalValidator.noSelectedOption)
       })
     });
-    this.createTooltips();
   }
 
   ngOnInit(){
     this.animation.deleteEntry('content-reception-2');
-  }
-
-  ngAfterViewInit(){
-    this.orderSubscribe(this.documentForm_documentType, this.documentFormService);
-    this.orderSubscribe(this.documentForm_documentNumber, this.documentFormService);
-  }
-
-  orderSubscribe(control: any, service: any){
-    control.formService = service;
-    control.submitSubscribe();
-  }
-
-  createTooltips(){
-    this.tooltips = this.generalValidator.getTooltipsArray([
-      '.documentForm.documentType',
-      '.documentForm.documentNumber',
-      '.patientForm.personalData.documentType',
-      '.patientForm.personalData.documentNumber',
-      '.patientForm.personalData.name1',
-      '.patientForm.personalData.name2',
-      '.patientForm.personalData.lastName1',
-      '.patientForm.personalData.lastName2',
-      '.patientForm.personalData.birthDate',
-      '.patientForm.personalData.gender',
-      '.patientForm.personalData.birthDepartament',
-      '.patientForm.personalData.birthTown',
-      '.patientForm.contactData.residenceDepartament',
-      '.patientForm.contactData.residenceTown',
-      '.patientForm.contactData.phoneNumber',
-      '.patientForm.contactData.address',
-      '.patientForm.contactData.email',
-      '.patientForm.others.zone',
-      '.patientForm.others.patientType'
-    ]);
-  }
-
-  showTooltip(show: boolean, ...route: string[]){
-    let control: string = '';
-    for(let c of route){
-      control += '.'+c;
-    }
-    this.tooltips[control] = show;
   }
 
   updateTowns(departamentId: number, birth: boolean){
@@ -160,6 +112,8 @@ export class PatientComponent implements OnInit, AfterViewInit {
     if(optionSelected == 1){
       this.search = false;
       this.new = true;
+      this.documentSubmit.next(false);
+      this.patientSubmit.next(false);
       this.patientService.createPatient();
       this.patientForm.reset(this.patientService.getPatientFormJson());
       this.disableForm(false);
@@ -168,8 +122,7 @@ export class PatientComponent implements OnInit, AfterViewInit {
   }
 
   searchPatientQuestion(){
-    this.documentFormService.submitted.next(true);
-    this.documentFormSubmitted = true;
+    this.documentSubmit.next(true);
     if(this.documentForm.valid){
       if(this.search && !this.patientForm.pristine){
         this.modalPatientSearch = {
@@ -191,6 +144,8 @@ export class PatientComponent implements OnInit, AfterViewInit {
 
   searchPatient(optionSelected: number){
     if(optionSelected == 1){
+      this.documentSubmit.next(false);
+      this.patientSubmit.next(false);
       this.patientService.searchPatient(this.documentForm.get('documentType').value, this.documentForm.get('documentNumber').value).subscribe(patient => {
         console.log(patient);
         if(patient != null){
@@ -201,6 +156,7 @@ export class PatientComponent implements OnInit, AfterViewInit {
           this.disableForm(true);
         } else {
           this.patientService.deletePatient();
+          this.patientForm.reset();
         }
         this.search = true;
         this.new = false;
@@ -231,7 +187,7 @@ export class PatientComponent implements OnInit, AfterViewInit {
   }
 
   saveQuestion(){
-    this.patientFormSubmitted = true;
+    this.patientSubmit.next(true);
     if(this.patientForm.valid){
       if(!this.patientForm.pristine){
         this.modalSave = {

@@ -17,8 +17,8 @@
 		</div>
 	</div>
 
-	<div class="box border border-info separate appear" style="margin-bottom: 30px" [ngSwitch]="optionSelected">
-		<div id="content-reception-1" class="appear" *ngSwitchCase="1">1</div>
+	<div class="box border border-info separate appear compress" style="margin-bottom: 30px" [ngSwitch]="optionSelected">
+		<div id="content-reception-1" class="appear" *ngSwitchCase="1"><app-appointment></app-appointment></div>
 		<div id="content-reception-2" class="appear" *ngSwitchCase="2"><app-patient></app-patient></div>
 		<div id="content-reception-3" class="appear" *ngSwitchCase="3">3</div>
 	</div>

@@ -10,9 +10,15 @@ import { PatientForm } from '../../interfaces/patient-form';
 @Injectable()
 export class PatientService {
 
+  /*
+    No se hace uso de la clase Departament en el atributo departaments debido a que
+    son de tipo opción, es decir, tienen la forma { text: 'xxx', id: 'xx' }
+    con el fin de hacer uso de ellos en los select del html 
+  */
+
 	private urlApi: string;
 	private patient: Patient;
-	private departaments: Departament[];
+	private departaments: any[];
 	private towns: Town[];
 
   constructor(private http: HttpClient) {
@@ -24,7 +30,12 @@ export class PatientService {
   }
 
   getDepartaments(){
-  	this.http.get<Departament[]>(`${ this.urlApi }/departaments`).subscribe(data => this.departaments = data);
+  	this.http.get<Departament[]>(`${ this.urlApi }/departaments`).subscribe(data => {
+      this.departaments = [{ text: 'Seleccione...', value: '0' }];
+      for(let departament of data){
+        this.departaments.push({ text: departament.name, value: departament.id });
+      }
+    });
   }
 
   getTowns(){
@@ -46,7 +57,6 @@ export class PatientService {
   		patient.zone,
   		patient.patientType
   	);
-  	// console.log(this.patient);
   }
 
   setPatientData(form: FormGroup){
@@ -73,9 +83,9 @@ export class PatientService {
   }
 
   getTownsOf(departamentId: number){
-    let townsOf: Town[] = [];
+    let townsOf: any[] = [{ text: 'Seleccione...', value: '0' }];
     for(let t of this.towns){
-      if(t.departament.id == departamentId) townsOf.push(t);
+      if(t.departament.id == departamentId) townsOf.push({ text: t.name, value: t.id });
     }
     return townsOf;
   }
